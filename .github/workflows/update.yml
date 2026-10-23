@@ -1,0 +1,44 @@
+name: update-config
+
+on:
+  schedule:
+    # 每天两次（UTC 03:17 / 15:17，北京时间 11:17 / 23:17）
+    - cron: "17 3,15 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-config
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch upstream config
+        run: |
+          curl -fsSL --retry 3 --retry-delay 5 \
+            https://johnshall.github.io/Shadowrocket-ADBlock-Rules-Forever/sr_top500_whitelist.conf \
+            -o upstream.conf
+          wc -c upstream.conf
+
+      - name: Build patched config
+        run: |
+          python3 scripts/build_config.py upstream.conf sr_top500_whitelist.conf
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sr_top500_whitelist.conf
+          if git diff --cached --quiet; then
+            echo "no changes"
+          else
+            git commit -m "chore: update patched config from upstream"
+            git push
+          fi

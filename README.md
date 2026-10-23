@@ -56,6 +56,27 @@ Shadowrocket 规则测试：
 - `bilibili.com` / `www.baidu.com` / `www.taobao.com` → **DIRECT**
 - 打开 B 站、淘宝，日志里应为 DIRECT
 
+## 如果国内站点也走代理（重要）
+
+这不是配置规则的问题，先检查 **设置 → 全局路由** 是不是「配置」。
+如果被设成了「代理」，所有流量（包括 B 站、百度）都会走代理，规则测试也会一律显示 PROXY。
+
+macOS 可以直接用 URL scheme 切回配置模式：
+
+```bash
+open "shadowrocket://route/config"
+```
+
+iPhone 可以在 Safari 地址栏打开 `shadowrocket://route/config`（或做个快捷指令）。
+
+验证当前出口：
+
+- `https://api.bilibili.com/x/web-interface/zone` → 应返回 `"country":"中国"`
+- `https://www.cloudflare.com/cdn-cgi/trace` → 应返回国内 IP（直连）
+- `https://challenges.cloudflare.com/cdn-cgi/trace` → 应返回代理节点 IP（PROXY）
+
+（`shadowrocket://route/proxy` / `shadowrocket://route/direct` 可切到全局代理/全局直连，别用错。）
+
 ## 自动更新是怎么跑的
 
 ```

@@ -1,2 +1,3 @@
 upstream.conf
 .DS_Store
+private/

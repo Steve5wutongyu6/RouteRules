@@ -26,9 +26,4 @@ python3 scripts/build_config.py upstream.conf sr_top500_whitelist.conf
 
 广告版：改 `update.yml` 的上游 URL，并同步修改 `build_config.py` 里的 `UPDATE_URL` 文件名。
 
-## 说明
 
-- 公开仓库，不含节点、订阅、证书或私有 DNS。
-- 构建脚本会删除 `ca-p12` / `ca-passphrase`。
-- 私有 DNS 用本机模块覆盖 `dns-server`；模块不要加 `[Rule]`（会覆盖整份规则表），也不要提交到仓库。
-- 国内站点也走代理时，先检查全局路由是否为「配置」；macOS 可执行 `open "shadowrocket://route/config"`。

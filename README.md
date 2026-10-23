@@ -77,6 +77,22 @@ iPhone 可以在 Safari 地址栏打开 `shadowrocket://route/config`（或做�
 
 （`shadowrocket://route/proxy` / `shadowrocket://route/direct` 可切到全局代理/全局直连，别用错。）
 
+## 想用你自己的私有 DNS，又不想公开
+
+不要把你的 HTTPDNS 地址写进公开配置。用**本机模块**覆盖即可：
+
+1. 复制 [examples/dns-override.sgmodule](examples/dns-override.sgmodule)，把里面的占位地址换成你自己的；
+2. Shadowrocket → 设置 → 模块 → 从文件导入 → 启用；
+3. 模块里只放 `[General]`，**绝对不要加 `[Rule]` 段**（模块的 `[Rule]` 会整表覆盖分流规则）；
+4. 验证：规则测试 `bilibili.com` 仍是 DIRECT，DNS 正常解析。
+
+这样公开仓库里只有通用 DNS（阿里 DoH + 223.5.5.5），你的私有 DNS 只存在本机模块里，不会公开。
+仓库本身也没有你的订机票/节点/证书等任何信息，因此并不需要设为私有。
+
+> 如果你坚持把仓库设为 **private**：Shadowrocket 拉配置时不能携带 GitHub 的 Authorization 头，
+> GitHub 私有 raw 无法匿名访问。要做到“私有仓库 + 自动更新”，需要额外的托管层
+> （自建带 Basic Auth 的静态源，或 Cloudflare Worker 持有 token 代理），不是单纯改个仓库可见性就能实现。
+
 ## 自动更新是怎么跑的
 
 ```

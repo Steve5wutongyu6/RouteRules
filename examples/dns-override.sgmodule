@@ -1,0 +1,8 @@
+#!name=My DNS Override (local template)
+#!desc=示例：仅本机覆盖 dns-server，使用你自己的 DNS；不要加 [Rule] 段，也不要提交到公开仓库。
+#!category=DNS
+
+[General]
+dns-server = https://your-httpdns.example.com/dns-query, 223.5.5.5, 223.6.6.6
+direct-dns-server = https://your-httpdns.example.com/dns-query, 223.5.5.5
+fallback-dns-server = 119.29.29.29

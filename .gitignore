@@ -1,3 +1,5 @@
 upstream.conf
 .DS_Store
 private/
+__pycache__/
+*.pyc

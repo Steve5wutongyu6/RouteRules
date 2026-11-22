@@ -16,16 +16,14 @@ import argparse
 import re
 import sys
 
-# Cloudflare 控制台真正要用的三个域名,必须走同一个出口(这里统一 PROXY):
-#   dash.cloudflare.com        —— 控制台页面。直连会被 403 Managed Challenge 拦住,
-#                                且挑战页 HTML 在国内直连路径上收不完(实测 0 bytes 超时)。
-#   api.cloudflare.com         —— 控制台的 XHR 接口,与控制台同出口才不会被当成两个会话。
-#   challenges.cloudflare.com  —— 人机验证组件(Turnstile)。
-# 上游有 DOMAIN-SUFFIX,cloudflare.com,Direct,所以这三条必须 pre-matching 抢在前面。
+# Cloudflare 全家族统一走 PROXY。上游有 DOMAIN-SUFFIX,cloudflare.com,Direct,而实测
+# 直连这条路:控制台 dash.cloudflare.com 只回 403 挑战页(挑战页正文在国内直连路径上
+# 收不完,0 bytes 卡到超时),社区 community.cloudflare.com 同样是 403
+# cf-mitigated: challenge,首页/文档/blog 慢到 2~5s;走 PROXY 后 dash / api /
+# challenges / insights 都是 0.3~0.6s 返回。而且控制台的 cf_clearance 绑定出口 IP,
+# 主站、接口、人机验证组件必须同一个出口。pre-matching 保证先于上游那条 Direct 命中。
 PATCH_RULES = [
-    "DOMAIN-SUFFIX,dash.cloudflare.com,PROXY,pre-matching",
-    "DOMAIN-SUFFIX,api.cloudflare.com,PROXY,pre-matching",
-    "DOMAIN-SUFFIX,challenges.cloudflare.com,PROXY,pre-matching",
+    "DOMAIN-SUFFIX,cloudflare.com,PROXY,pre-matching",
 ]
 UPSTREAM_DIRECT_RULE = re.compile(r"^DOMAIN-SUFFIX,cloudflare\.com,(Direct|DIRECT)\s*$", re.IGNORECASE | re.MULTILINE)
 DNS_SERVER = "https://dns.alidns.com/dns-query, 223.5.5.5, 223.6.6.6"
@@ -33,9 +31,9 @@ UPDATE_URL = "https://cdn.jsdelivr.net/gh/Steve5wutongyu6/RouteRules@main/sr_top
 MARK_BEGIN = "# === CF Dashboard/Challenge Fix (patch) ==="
 MARK_END = "# === CF Dashboard/Challenge Fix end ==="
 PATCH_COMMENT = (
-    "# 让 Cloudflare 控制台、它的 API 和人机验证组件走同一出口(pre-matching 先于上游的\n"
-    "# DOMAIN-SUFFIX,cloudflare.com,Direct),否则直连的挑战页打不开、cf_clearance 也会\n"
-    "# 因为出口 IP 不一致而反复失效。\n"
+    "# 让整个 cloudflare.com 家族走 PROXY(pre-matching 先于上游的\n"
+    "# DOMAIN-SUFFIX,cloudflare.com,Direct)。直连的控制台/社区子域只回 403 挑战页,\n"
+    "# 首页等要 2~5s;控制台的 cf_clearance 也要求主站与验证组件同一个出口。\n"
 )
 
 
